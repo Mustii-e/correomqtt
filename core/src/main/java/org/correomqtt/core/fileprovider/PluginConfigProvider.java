@@ -1,16 +1,15 @@
 package org.correomqtt.core.fileprovider;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
-import org.correomqtt.core.model.HooksDTO;
 import org.correomqtt.core.utils.DirectoryUtils;
-import org.correomqtt.di.Inject;
-import org.correomqtt.di.SingletonBean;
 import org.correomqtt.di.SoyEvents;
+import org.correomqtt.core.model.HooksDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.correomqtt.di.Inject;
+import org.correomqtt.di.SingletonBean;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,10 +26,9 @@ public class PluginConfigProvider extends BaseUserFileProvider {
     private static final String EX_MSG_PREPARE_PLUGIN_FOLDER = "Could not create plugin folder.";
     private static final String PLUGIN_FOLDER = "plugins";
 
-    private JsonNode hooksNode;
-
-    //private Map<, >
+    private HooksDTO hooksDTO;
     private String pluginPath;
+
     @Inject
     public PluginConfigProvider(SoyEvents soyEvents) {
         super(soyEvents);
@@ -45,12 +43,7 @@ public class PluginConfigProvider extends BaseUserFileProvider {
         preparePluginPath();
 
         try {
-            hooksNode = new ObjectMapper().readTree(getFile());
-            hooksNode.fields().forEachRemaining(entry -> {
-                String pluginName = entry.getKey();
-
-
-            });
+            hooksDTO = new ObjectMapper().readValue(getFile(), HooksDTO.class);
         } catch (IOException e) {
             LOGGER.error("Exception parsing hooks file {}", HOOK_FILE_NAME, e);
             soyEvents.fire(new InvalidHooksFileEvent(e));
@@ -59,25 +52,19 @@ public class PluginConfigProvider extends BaseUserFileProvider {
     }
 
     public List<HooksDTO.Extension> getOutgoingMessageHooks() {
-return null; //TODO
-
-
-//        return hooksNode.getOutgoingMessages();
+        return hooksDTO.getOutgoingMessages();
     }
 
     public List<HooksDTO.Extension> getIncomingMessageHooks() {
-//        return hooksNode.getIncomingMessages();
-        return null; //TODO
+        return hooksDTO.getIncomingMessages();
     }
 
     public List<HooksDTO.DetailViewTask> getDetailViewTasks() {
-//        return hooksNode.getDetailViewTasks();
-        return null; //TODO
+        return hooksDTO.getDetailViewTasks();
     }
 
     public List<HooksDTO.MessageValidator> getMessageValidators() {
-//        return hooksNode.getMessageValidators();
-        return null; //TODO
+        return hooksDTO.getMessageValidators();
     }
 
     private void preparePluginPath() {

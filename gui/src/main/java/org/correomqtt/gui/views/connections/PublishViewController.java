@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import org.correomqtt.core.CoreManager;
 import org.correomqtt.core.concurrent.SimpleTaskErrorResult;
 import org.correomqtt.core.connection.ConnectionStateChangedEvent;
+import org.correomqtt.core.pubsub.PublishListFavoritedEvent;
 import org.correomqtt.di.SoyEvents;
 import org.correomqtt.di.Observes;
 import org.correomqtt.core.exception.CorreoMqttException;
@@ -153,6 +154,9 @@ public class PublishViewController extends BaseMessageBasedViewController {
         qosComboBox.setItems(FXCollections.observableArrayList(Qos.values()));
         qosComboBox.getSelectionModel().selectFirst();
         qosComboBox.setCellFactory(qosCellFactory::create);
+
+        messageListViewController.getFavoritesFilterButton().setVisible(true);
+        messageListViewController.getFavoriteButton().setVisible(true);
 
         coreManager.getPluginManager().getExtensions(PublishMenuHook.class).forEach(p -> {
             HBox pluginBox = new HBox();
@@ -375,6 +379,12 @@ public class PublishViewController extends BaseMessageBasedViewController {
             LOGGER.debug("Message copied to form: {}", getConnectionId());
         }
     }
+
+    @Override
+    public void changeFavoriteStatus(MessagePropertiesDTO messageDto) {
+        soyEvents.fireAsync(new PublishListFavoritedEvent(getConnectionId(), MessageTransformer.propsToDTO(messageDto)));
+    }
+
 
     @Override
     public Supplier<MessageListViewConfig> produceListViewConfig() {

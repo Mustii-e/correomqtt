@@ -12,6 +12,7 @@ public interface MessageListViewDelegate {
     void clearMessages();
     void setTabDirty();
     void setUpToForm(MessagePropertiesDTO selectedMessage);
+    void changeFavoriteStatus(MessagePropertiesDTO messageDto);
 
     Supplier<MessageListViewConfig> produceListViewConfig();
 }

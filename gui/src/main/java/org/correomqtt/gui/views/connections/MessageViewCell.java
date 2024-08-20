@@ -1,5 +1,7 @@
 package org.correomqtt.gui.views.connections;
 
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.ToggleButton;
 import org.correomqtt.di.Assisted;
 import org.correomqtt.di.DefaultBean;
 import org.correomqtt.di.Inject;
@@ -75,6 +77,10 @@ public class MessageViewCell extends ListCell<MessagePropertiesDTO> {
     @FXML
     private Label payloadLabel;
 
+    @SuppressWarnings("unused")
+    @FXML
+    private ToggleButton favoriteStar;
+
     @FXML
     private Label subscriptionLabel;
 
@@ -82,6 +88,10 @@ public class MessageViewCell extends ListCell<MessagePropertiesDTO> {
     private Label timestampLabel;
 
     private FXMLLoader loader;
+
+    private MessagePropertiesDTO messageDto;
+
+    private ContextMenu contextMenu;
 
 
     @FXML
@@ -155,6 +165,8 @@ public class MessageViewCell extends ListCell<MessagePropertiesDTO> {
         subscriptionLabel.setVisible(false);
         subscriptionLabel.setManaged(false);
 
+        this.messageDto = messageDTO;
+
         topicLabel.setText(messageDTO.getTopic());
 
         if (messageDTO.getSubscription() != null) {
@@ -189,6 +201,9 @@ public class MessageViewCell extends ListCell<MessagePropertiesDTO> {
             timestampLabel.setVisible(false);
             timestampLabel.setManaged(false);
         }
+
+        favoriteStar.setVisible(messageDto.isFavorited());
+        favoriteStar.setSelected(messageDto.isFavorited());
 
         String payload = messageDTO.getPayload();
         payloadLabel.setText(payload.substring(0, Math.min(payload.length(), MAX_PAYLOAD_LENGTH))

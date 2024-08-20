@@ -1,5 +1,6 @@
 package org.correomqtt.gui.contextmenu;
 
+import javafx.scene.control.MenuItem;
 import org.correomqtt.di.Assisted;
 import org.correomqtt.di.DefaultBean;
 import org.correomqtt.di.Inject;
@@ -20,6 +21,7 @@ public class MessageListContextMenu extends BaseMessageContextMenu<MessageListCo
     private IconMenuItem removeMessage;
     private IconMenuItem saveMessage;
     private IconMenuItem timeInfo;
+    private IconMenuItem markAsFavorite;
 
     private SeparatorMenuItem separator1;
     private SeparatorMenuItem separator2;
@@ -44,6 +46,9 @@ public class MessageListContextMenu extends BaseMessageContextMenu<MessageListCo
         saveMessage.setIcon("mdi-content-save");
         saveMessage.setOnAction(this::saveMessage);
 
+        markAsFavorite = new IconMenuItem(getResources().getString("messageListContextMenuMarkAsFavorite"));
+        markAsFavorite.setOnAction(this::markMessageAsFavorite);
+
         timeInfo = new IconMenuItem();
         timeInfo.setVisible(false);
         timeInfo.setDisable(true);
@@ -60,6 +65,7 @@ public class MessageListContextMenu extends BaseMessageContextMenu<MessageListCo
                 showDetails,
                 removeMessage,
                 saveMessage,
+                markAsFavorite,
                 separator1,
                 copyTopicToClipboard,
                 copyTimeToClipboard,
@@ -78,6 +84,13 @@ public class MessageListContextMenu extends BaseMessageContextMenu<MessageListCo
         } else {
             LOGGER.warn("Call to {}::saveMessage with empty message.", getClassName());
         }
+    }
+
+    public void markMessageAsFavorite(ActionEvent actionEvent) {
+        if (dto != null) {
+            delegate.markMessageAsFavorite(dto);
+        } else {
+            LOGGER.warn("Call to {}::markMessageAsFavorite with empty message.", getClassName());        }
     }
 
 

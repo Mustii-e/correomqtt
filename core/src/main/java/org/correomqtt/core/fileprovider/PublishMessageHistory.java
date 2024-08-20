@@ -1,6 +1,7 @@
 package org.correomqtt.core.fileprovider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.correomqtt.core.pubsub.PublishListFavoritedEvent;
 import org.correomqtt.di.Assisted;
 import org.correomqtt.di.DefaultBean;
 import org.correomqtt.di.Inject;
@@ -17,8 +18,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @DefaultBean
 public class PublishMessageHistory extends BasePersistHistoryProvider<PublishMessageHistoryListDTO> {
@@ -64,11 +67,16 @@ public class PublishMessageHistory extends BasePersistHistoryProvider<PublishMes
     public synchronized void onPublishSucceeded(@Observes PublishEvent event) {
         LOGGER.info("Persisting new publish history entry: {}", event.getMessageDTO().getTopic());
 
-        List<MessageDTO> messageList = getMessages(event.getConnectionId());
-        messageList.add(0, event.getMessageDTO());
+        LinkedList<MessageDTO> messageList = new LinkedList<>(getMessages(event.getConnectionId()));
+        messageList.addFirst(event.getMessageDTO());
+
+        LinkedList<MessageDTO> nonFavorites = messageList.stream()
+                .filter(m -> !m.isFavorited())
+                .collect(Collectors.toCollection(LinkedList::new));
+
         while (messageList.size() > MAX_ENTRIES) {
             LOGGER.info("Removing last entry from publish history, cause limit of {} is reached.", MAX_ENTRIES);
-            messageList.remove(messageList.size() - 1);
+            messageList.remove(nonFavorites.getLast());
         }
         saveHistory(event.getConnectionId());
     }
@@ -83,6 +91,19 @@ public class PublishMessageHistory extends BasePersistHistoryProvider<PublishMes
     }
 
     @SuppressWarnings("unused")
+    public synchronized void onPublishChangeFavoriteStatus(@Observes PublishListFavoritedEvent event) {
+        LOGGER.info("Change {} in favorites list for {}.", event.getMessageDTO().getTopic(), event.getConnectionId());
+        LinkedList<MessageDTO> messageList = new LinkedList<>(getMessages(event.getConnectionId()));
+        for ( int i = 0; i < messageList.size(); i++ ) {
+            if (messageList.get(i).getMessageId().equals(event.getMessageDTO().getMessageId())) {
+                event.getMessageDTO().setFavorited(!messageList.get(i).isFavorited());
+                messageList.set(i, event.getMessageDTO());
+            }
+        }
+        saveHistory(event.getConnectionId());
+    }
+
+    @SuppressWarnings("unused")
     public synchronized void onPublishRemoved(@Observes PublishListRemovedEvent event) {
         LOGGER.info("Removing {} from publish history for {}.", event.getMessageDTO().getTopic(), event.getConnectionId());
         List<MessageDTO> messageList = getMessages(event.getConnectionId());
@@ -94,7 +115,8 @@ public class PublishMessageHistory extends BasePersistHistoryProvider<PublishMes
     public synchronized void onPublishesCleared(@Observes PublishListClearEvent event) {
         LOGGER.info("Clearing publish history for {}.", event.getConnectionId());
         List<MessageDTO> messageList = getMessages(event.getConnectionId());
-        messageList.clear();
+        List<MessageDTO> nonFavorites = messageList.stream().filter(m -> !m.isFavorited()).toList();
+        messageList.removeAll(nonFavorites);
         saveHistory(event.getConnectionId());
     }
 

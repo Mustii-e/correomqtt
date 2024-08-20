@@ -9,4 +9,5 @@ public interface MessageListContextMenuDelegate extends BaseMessageContextMenuDe
     void removeMessage(MessagePropertiesDTO messageDTO);
 
     void saveMessage(MessagePropertiesDTO dto);
+    void markMessageAsFavorite(MessagePropertiesDTO dto);
 }

@@ -5,7 +5,6 @@ import org.correomqtt.core.scripting.binding.AsyncLatch;
 import org.correomqtt.core.scripting.binding.ClientFactory;
 import org.correomqtt.core.scripting.binding.Queue;
 import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
@@ -71,8 +70,6 @@ public class JsContextBuilder {
 
     private void createContext() {
         context = Context.newBuilder("js")
-                .allowHostAccess(HostAccess.ALL)
-                .allowHostClassLookup(className -> true)
                 .allowExperimentalOptions(true) // required for top level await
                 .out(out)
                 .err(out)

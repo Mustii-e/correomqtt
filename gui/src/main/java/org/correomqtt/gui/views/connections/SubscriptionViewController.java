@@ -433,6 +433,11 @@ public class SubscriptionViewController extends BaseMessageBasedViewController i
     }
 
     @Override
+    public void changeFavoriteStatus(MessagePropertiesDTO messageDto) {
+        // do nothing
+    }
+
+    @Override
     public Supplier<MessageListViewConfig> produceListViewConfig() {
         return () -> coreManager.getSettingsManager()
                 .getConnectionConfigs()

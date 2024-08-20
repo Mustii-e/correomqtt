@@ -66,7 +66,7 @@ public class PublishHistory extends BasePersistHistoryProvider<PublishHistoryLis
         List<String> topicsSet = getTopics(event.getConnectionId());
         String topic = event.getMessageDTO().getTopic();
         topicsSet.remove(topic);
-        topicsSet.add(topic);
+        topicsSet.add(0, topic);
         while (topicsSet.size() > MAX_ENTRIES) {
             LOGGER.info("Removing last entry from publish history, cause limit of {} is reached.", MAX_ENTRIES);
             topicsSet.remove(topicsSet.iterator().next());

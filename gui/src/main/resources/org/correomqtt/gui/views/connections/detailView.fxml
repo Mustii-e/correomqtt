@@ -4,6 +4,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.SplitMenuButton?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
@@ -132,8 +133,9 @@
                 </Label>
             </HBox>
             <HBox alignment="CENTER_LEFT" minHeight="20.0" VBox.vgrow="NEVER">
-                <HBox fx:id="detailViewNodeBox" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-                </HBox>
+                <HBox fx:id="detailViewNodeBox" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS"/>
+                <ToggleButton fx:id="favoriteStar" id="favoriteStar" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+                              minWidth="-Infinity" mnemonicParsing="false" prefHeight="2.0" prefWidth="34.0"/>
                 <Label id="detailViewValid" fx:id="detailViewValid" alignment="CENTER" maxWidth="-Infinity"
                        minWidth="-Infinity" styleClass="tag, valid" text="OK" HBox.hgrow="ALWAYS">
                     <HBox.margin>

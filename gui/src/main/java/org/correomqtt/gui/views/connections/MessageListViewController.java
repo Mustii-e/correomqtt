@@ -21,11 +21,13 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import lombok.Getter;
 import org.controlsfx.control.textfield.TextFields;
 import org.correomqtt.core.CoreManager;
 import org.correomqtt.core.connection.ConnectionStateChangedEvent;
 import org.correomqtt.core.model.ControllerType;
 import org.correomqtt.core.model.LabelType;
+import org.correomqtt.core.model.MessageDTO;
 import org.correomqtt.core.model.MessageListViewConfig;
 import org.correomqtt.core.model.MessageType;
 import org.correomqtt.core.model.PublishStatus;
@@ -46,14 +48,16 @@ import org.correomqtt.gui.views.LoaderResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static org.correomqtt.core.connection.ConnectionState.CONNECTED;
 
 @DefaultBean
 public class MessageListViewController extends BaseConnectionController implements
         MessageListContextMenuDelegate,
-        DetailViewDelegate {
+        DetailViewDelegate, MessageListViewDelegate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MessageListViewController.class);
 
@@ -66,6 +70,12 @@ public class MessageListViewController extends BaseConnectionController implemen
     protected SplitPane splitPane;
     @FXML
     protected ToggleButton showDetailViewButton;
+    @FXML
+    @Getter
+    public ToggleButton favoritesFilterButton;
+    @FXML
+    @Getter
+    public ToggleButton favoriteButton;
     @FXML
     protected MenuButton showLabelsButton;
     @FXML
@@ -89,6 +99,7 @@ public class MessageListViewController extends BaseConnectionController implemen
     private VBox messagesVBox;
     private ObservableList<MessagePropertiesDTO> messages;
     private FilteredList<MessagePropertiesDTO> filteredMessages;
+    private FilteredList<MessagePropertiesDTO> favoriteMessages;
     private DetailViewController detailViewController;
 
 
@@ -132,6 +143,9 @@ public class MessageListViewController extends BaseConnectionController implemen
         copyToFormButton.setDisable(true);
         showDetailsButton.setDisable(true);
         clearMessagesButton.setDisable(true);
+        favoriteButton.setVisible(false);
+        favoritesFilterButton.setVisible(false);
+        favoriteButton.setDisable(true);
 
         MessageListViewConfig config = delegate.produceListViewConfig().get();
 
@@ -149,6 +163,7 @@ public class MessageListViewController extends BaseConnectionController implemen
 
         messages = FXCollections.observableArrayList(MessagePropertiesDTO.extractor());
         filteredMessages = new FilteredList<>(messages, s -> true);
+        favoriteMessages = new FilteredList<>(messages, MessagePropertiesDTO::isFavorited);
 
         listView.setItems(filteredMessages);
         listView.setCellFactory(this::createCell);
@@ -206,6 +221,11 @@ public class MessageListViewController extends BaseConnectionController implemen
     private void onCellClicked(MouseEvent event, MessagePropertiesDTO messageDTO) {
         if (messageDTO != null && event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount() == 2) {
             detailViewControllerFactory.create(messageDTO, getConnectionId(), this, false).showAsDialog();
+        }
+
+        if (this.getSelectedMessage() != null) {
+            favoriteButton.setDisable(false);
+            favoriteButton.setSelected(this.getSelectedMessage().isFavorited());
         }
 
         if (LOGGER.isDebugEnabled()) {
@@ -266,11 +286,11 @@ public class MessageListViewController extends BaseConnectionController implemen
             detailViewController.setMessage(null);
         }
 
-        messages.clear();
+        List<MessagePropertiesDTO> nonFavorites = messages.stream().filter(m -> !m.isFavorited()).toList();
+        messages.removeAll(nonFavorites);
 
         copyToFormButton.setDisable(true);
         showDetailsButton.setDisable(true);
-        clearMessagesButton.setDisable(true);
 
         delegate.clearMessages();
 
@@ -293,6 +313,40 @@ public class MessageListViewController extends BaseConnectionController implemen
     public void saveMessage(MessagePropertiesDTO messageDTO) {
         Stage stage = (Stage) messagesVBox.getScene().getWindow();
         messageUtils.saveMessage(messageDTO, stage);
+    }
+
+    @Override
+    public void markMessageAsFavorite(MessagePropertiesDTO dto) {
+        changeFavoriteStatus(dto);
+    }
+
+    @FXML
+    void filterFavorites() {
+        if(favoritesFilterButton.isSelected()) {
+            favoriteMessages = new FilteredList<>(messages, MessagePropertiesDTO::isFavorited);
+            listView.setItems(favoriteMessages);
+        }
+        else {
+            listView.setItems(filteredMessages);
+        }
+    }
+
+    @FXML
+    void toggleFavoriteStatus() {
+        if (this.getSelectedMessage() != null) {
+            changeFavoriteStatus(this.getSelectedMessage());
+        }
+    }
+
+    @Override
+    public void changeFavoriteStatus(MessagePropertiesDTO messageDTO) {
+        messageDTO.setIsFavorited(!messageDTO.isFavorited());
+        delegate.changeFavoriteStatus(messageDTO);
+    }
+
+    @Override
+    public Supplier<MessageListViewConfig> produceListViewConfig() {
+        return null;
     }
 
     void setFilterPredicate(Predicate<MessagePropertiesDTO> filterPredicate) {
@@ -431,6 +485,21 @@ public class MessageListViewController extends BaseConnectionController implemen
 
     @Override
     public void showDetailsInSeparateWindow(MessagePropertiesDTO messageDTO) {
+        // do nothing
+    }
+
+    @Override
+    public void removeMessage(MessageDTO messageDTO) {
+        // do nothing
+    }
+
+    @Override
+    public void clearMessages() {
+        // do nothing
+    }
+
+    @Override
+    public void setTabDirty() {
         // do nothing
     }
 
