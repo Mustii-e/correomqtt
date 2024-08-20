@@ -42,18 +42,16 @@
                 </IconButton>
                 <Pane HBox.hgrow="ALWAYS"/>
 
-                <IconToggleButton fx:id="favoritesFilterButton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="20.0"
-                              mnemonicParsing="false" onAction="#filterFavorites" prefHeight="25.0" prefWidth="20.0"
-                              icon="mdi-filter">
+                <IconToggleButton fx:id="favoritesFilterButton" mnemonicParsing="false"
+                                  onAction="#filterFavorites" icon="mdi-filter">
                     <HBox.margin>
                         <Insets left="5.0"/>
                     </HBox.margin>
                 </IconToggleButton>
-                <IconToggleButton fx:id="favoriteButton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="25.0"
-                                  mnemonicParsing="false" onAction="#toggleFavoriteStatus" prefHeight="25.0" prefWidth="25.0"
-                                  icon="mdi-star">
+                <IconToggleButton fx:id="favoriteButton" minHeight="25.0" minWidth="30.0" mnemonicParsing="false"
+                                  onAction="#toggleFavoriteStatus" icon="mdi-star">
                     <HBox.margin>
-                        <Insets/>
+                        <Insets left="5.0"/>
                     </HBox.margin>
                 </IconToggleButton>
                 <IconButton fx:id="clearMessagesButton" minHeight="25.0" minWidth="30.0" mnemonicParsing="false"
